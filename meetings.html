@@ -49,6 +49,29 @@
         }
         h1 { color: #d4af37; margin-bottom: 20px; }
         
+        /* Next Service Banner Style */
+        .schedule-banner {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid #d4af37;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .banner-highlight {
+            color: #d4af37;
+            font-weight: bold;
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .banner-tz {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            display: block;
+            margin-top: 5px;
+        }
+        
         .schedule-card { 
             background: rgba(255, 255, 255, 0.08); 
             padding: 30px; 
@@ -100,14 +123,19 @@
     <div class="container">
         <h1>Service Schedule</h1>
         
+        <div class="schedule-banner">
+            <span class="banner-highlight">📅 NEXT UPCOMING SERVICE</span>
+            <span id="nextServiceDate" style="font-size: 1.1rem; font-weight: 500;">Calculating next service date...</span>
+            <span id="userTimezone" class="banner-tz"></span>
+        </div>
+        
         <div class="schedule-card">
             <span class="days">2nd and 4th Saturdays*</span>
             <span class="time">Starting at 1:00 PM</span>
             <p>Join us for our regular fellowship and study.</p>
             <p class="note">Please check the "Upcoming Events" page for Holy Day service times and special gatherings.</p>
-            <p>* unless we have a event</p>
+            <p>* unless we have an event</p>
         </div>
-        
 
         <a href="index.html" class="back-link">← Back to Home</a>
     </div>
@@ -115,6 +143,68 @@
     <footer>
         2026 House of Judah
     </footer>
+
+    <script>
+        function getSaturdays(year, month) {
+            let saturdays = [];
+            let date = new Date(year, month, 1);
+            while (date.getMonth() === month) {
+                if (date.getDay() === 6) {
+                    saturdays.push(new Date(date));
+                }
+                date.setDate(date.getDate() + 1);
+            }
+            return saturdays;
+        }
+
+        function updateNextServiceBanner() {
+            const now = new Date();
+            let year = now.getFullYear();
+            let month = now.getMonth();
+            
+            let targetService = null;
+
+            // Calculates next available meeting time based on 1:00 PM CST (19:00 UTC)
+            for (let i = 0; i < 3; i++) {
+                let currentMonthSaturdays = getSaturdays(year, month);
+                
+                let secondSat = currentMonthSaturdays[1];
+                let fourthSat = currentMonthSaturdays[3];
+                
+                let secondSatTime = Date.UTC(secondSat.getFullYear(), secondSat.getMonth(), secondSat.getDate(), 19, 0, 0);
+                let fourthSatTime = Date.UTC(fourthSat.getFullYear(), fourthSat.getMonth(), fourthSat.getDate(), 19, 0, 0);
+
+                if (now.getTime() < secondSatTime) {
+                    targetService = new Date(secondSatTime);
+                    break;
+                } else if (now.getTime() < fourthSatTime) {
+                    targetService = new Date(fourthSatTime);
+                    break;
+                }
+                
+                month++;
+                if (month > 11) {
+                    month = 0;
+                    year++;
+                }
+            }
+
+            if (targetService) {
+                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const timeOptions = { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' };
+                
+                const localDateStr = targetService.toLocaleDateString(undefined, dateOptions);
+                const localTimeStr = targetService.toLocaleTimeString(undefined, timeOptions);
+                
+                document.getElementById('nextServiceDate').innerHTML = `<b>${localDateStr}</b> at <b>${localTimeStr}</b>`;
+                
+                const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                document.getElementById('userTimezone').innerText = `Times automatically adjusted for your timezone (${tzName})`;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', updateNextServiceBanner);
+    </script>
 
 </body>
 </html>
