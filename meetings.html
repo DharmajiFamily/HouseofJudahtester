@@ -133,5 +133,139 @@
             display: block; 
             margin-top: 40px; 
             color: #d4af37; 
-            text-decoration: none;
+            text-decoration: none; 
+            font-weight: bold; 
+            text-transform: uppercase;
+        }
+        
+        footer { 
+            background: #1a1a1a; 
+            color: #aaa; 
+            padding: 25px; 
+            font-size: 0.85rem; 
+            margin-top: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="index.html" class="logo-text">HOUSE OF JUDAH</a>
+    </nav>
+
+    <div class="container">
+        <h1>Service Schedule</h1>
+        
+        <div class="schedule-card">
+            <span class="days">2nd and 4th Saturdays*</span>
+            <span class="time">Starting at 1:00 PM</span>
+            <p>Join us for our regular fellowship and study.</p>
+            <p class="note">Please check the "Upcoming Events" page for Holy Day service times and special gatherings.</p>
+            <p>* unless we have an event</p>
+        </div>
+
+        <div class="schedule-card">
+            <span class="days" style="font-size: 1.3rem;">Local Sabbath Lookup</span>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 20px;">Enter your location to find when Friday sunset occurs in your local area.</p>
             
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;">
+                <input type="text" id="cityName" class="lookup-input" placeholder="City (e.g., Dallas)" style="width: 55%;">
+                <input type="text" id="stateName" class="lookup-input" placeholder="State (e.g., TX)" style="width: 25%;">
+            </div>
+            
+            <button onclick="findLocalSunset()" class="lookup-btn">Get Sunset Time</button>
+
+            <div id="sunsetDisplay" style="margin-top: 25px; display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <p id="locationHeader" style="font-weight: bold; color: #fff; margin-bottom: 5px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;"></p>
+                <p id="sunsetTimeResult" style="font-size: 2rem; font-weight: bold; color: #d4af37; margin: 10px 0;"></p>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0;">Sabbath begins at this local time this coming Friday.</p>
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">← Back to Home</a>
+    </div>
+
+    <button id="scrollToTopBtn" class="scroll-btn" onclick="scrollToTop()">↑</button>
+
+    <footer>
+        2026 House of Judah
+    </footer>
+
+    <script>
+        // --- Scroll to Top Logic ---
+        const topBtn = document.getElementById("scrollToTopBtn");
+
+        window.onscroll = function() {
+            // Show the button when scrolled down 300px from the top
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                topBtn.classList.add("show");
+            } else {
+                topBtn.classList.remove("show");
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth" // Gives it a nice sliding animation
+            });
+        }
+
+        // --- Sunset Lookup Logic ---
+        function findLocalSunset() {
+            const city = document.getElementById('cityName').value.trim();
+            const state = document.getElementById('stateName').value.trim();
+            
+            if (!city || !state) {
+                alert("Please enter both City and State.");
+                return;
+            }
+
+            document.getElementById('sunsetDisplay').style.display = "block";
+            document.getElementById('sunsetTimeResult').innerText = "Loading...";
+            document.getElementById('locationHeader').innerText = `Searching for ${city}...`;
+
+            const geoUrl = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=USA&format=json&limit=1`;
+            
+            fetch(geoUrl, { headers: { 'User-Agent': 'HouseOfJudahTesterApp/1.0' } })
+                .then(res => res.json())
+                .then(geoData => {
+                    if (!geoData || geoData.length === 0) {
+                        throw new Error("Location not found. Please check spelling.");
+                    }
+                    
+                    const lat = geoData[0].lat;
+                    const lon = geoData[0].lon;
+                    document.getElementById('locationHeader').innerText = `${city}, ${state.toUpperCase()}`;
+
+                    const sunsetUrl = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`;
+                    
+                    return fetch(sunsetUrl);
+                })
+                .then(res => res.json())
+                .then(sunData => {
+                    if (!sunData || sunData.status !== "OK") {
+                        throw new Error("Could not retrieve sunset data.");
+                    }
+
+                    const utcSunsetStr = sunData.results.sunset; 
+                    const localSunsetDate = new Date(utcSunsetStr);
+                    
+                    const formattedTime = localSunsetDate.toLocaleTimeString(undefined, {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    document.getElementById('sunsetTimeResult').innerText = formattedTime;
+                })
+                .catch(err => {
+                    document.getElementById('sunsetTimeResult').innerText = "Error";
+                    document.getElementById('locationHeader').innerText = err.message;
+                    console.error(err);
+                });
+        }
+    </script>
+
+</body>
+</html>
