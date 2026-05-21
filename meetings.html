@@ -41,34 +41,12 @@
         }
         h1 { color: #d4af37; margin-bottom: 20px; }
         
-        /* Next Service Banner Style */
-        .schedule-banner {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid #d4af37;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-        .banner-highlight {
-            color: #d4af37;
-            font-weight: bold;
-            font-size: 1.2rem;
-            display: block;
-            margin-bottom: 8px;
-        }
-        .banner-tz {
-            font-size: 0.85rem;
-            opacity: 0.7;
-            display: block;
-            margin-top: 5px;
-        }
-        
         .schedule-card { 
             background: rgba(255, 255, 255, 0.08); 
             padding: 30px; 
             border-radius: 15px; 
             border: 1px solid rgba(212, 175, 55, 0.3); 
+            margin-bottom: 25px;
         }
         
         .days { 
@@ -87,6 +65,37 @@
         }
         
         .note { opacity: 0.9; font-style: italic; }
+
+        /* Form styling inputs inside lookup card */
+        .lookup-input {
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid rgba(212, 175, 55, 0.5); 
+            background: #ffffff; 
+            color: #000000; 
+            font-size: 1rem;
+            outline: none;
+        }
+        .lookup-input:focus {
+            border-color: #d4af37;
+            box-shadow: 0 0 5px rgba(212, 175, 55, 0.5);
+        }
+
+        .lookup-btn {
+            background: #d4af37; 
+            color: #2d0b5a; 
+            border: none; 
+            padding: 12px 24px; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+        .lookup-btn:hover {
+            background: #f1c40f;
+        }
 
         .back-link { 
             display: block; 
@@ -115,18 +124,36 @@
     <div class="container">
         <h1>Service Schedule</h1>
         
-        <div class="schedule-banner">
-            <span class="banner-highlight">📅 NEXT UPCOMING SERVICE</span>
-            <span id="nextServiceDate" style="font-size: 1.1rem; font-weight: 500;">Calculating next service date...</span>
-            <span id="userTimezone" class="banner-tz"></span>
-        </div>
-        
         <div class="schedule-card">
             <span class="days">2nd and 4th Saturdays*</span>
             <span class="time">Starting at 1:00 PM</span>
             <p>Join us for our regular fellowship and study.</p>
             <p class="note">Please check the "Upcoming Events" page for Holy Day service times and special gatherings.</p>
             <p>* unless we have an event</p>
+        </div>
+
+        <div class="schedule-card">
+            <span class="days">Sabbath Bible Study</span>
+            <span class="time">Every Saturday at 1:00 PM</span>
+            <p>Deep dive into Scripture and group discussions.</p>
+        </div>
+
+        <div class="schedule-card">
+            <span class="days" style="font-size: 1.3rem;">Local Sabbath Lookup</span>
+            <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 20px;">Enter your location to find when Friday sunset occurs in your local area.</p>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px; justify-content: center;">
+                <input type="text" id="cityName" class="lookup-input" placeholder="City (e.g., Dallas)" style="width: 55%;">
+                <input type="text" id="stateName" class="lookup-input" placeholder="State (e.g., TX)" style="width: 25%;">
+            </div>
+            
+            <button onclick="findLocalSunset()" class="lookup-btn">Get Sunset Time</button>
+
+            <div id="sunsetDisplay" style="margin-top: 25px; display: none; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;">
+                <p id="locationHeader" style="font-weight: bold; color: #fff; margin-bottom: 5px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;"></p>
+                <p id="sunsetTimeResult" style="font-size: 2rem; font-weight: bold; color: #d4af37; margin: 10px 0;"></p>
+                <p style="font-size: 0.85rem; opacity: 0.7; margin: 0;">Sabbath begins at this local time this coming Friday.</p>
+            </div>
         </div>
 
         <a href="index.html" class="back-link">← Back to Home</a>
@@ -137,65 +164,59 @@
     </footer>
 
     <script>
-        function getSaturdays(year, month) {
-            let saturdays = [];
-            let date = new Date(year, month, 1);
-            while (date.getMonth() === month) {
-                if (date.getDay() === 6) {
-                    saturdays.push(new Date(date));
-                }
-                date.setDate(date.getDate() + 1);
-            }
-            return saturdays;
-        }
-
-        function updateNextServiceBanner() {
-            const now = new Date();
-            let year = now.getFullYear();
-            let month = now.getMonth();
+        function findLocalSunset() {
+            const city = document.getElementById('cityName').value.trim();
+            const state = document.getElementById('stateName').value.trim();
             
-            let targetService = null;
-
-            // Calculates next available meeting time based on 1:00 PM CST (19:00 UTC)
-            for (let i = 0; i < 3; i++) {
-                let currentMonthSaturdays = getSaturdays(year, month);
-                
-                let secondSat = currentMonthSaturdays[1];
-                let fourthSat = currentMonthSaturdays[3];
-                
-                let secondSatTime = Date.UTC(secondSat.getFullYear(), secondSat.getMonth(), secondSat.getDate(), 19, 0, 0);
-                let fourthSatTime = Date.UTC(fourthSat.getFullYear(), fourthSat.getMonth(), fourthSat.getDate(), 19, 0, 0);
-
-                if (now.getTime() < secondSatTime) {
-                    targetService = new Date(secondSatTime);
-                    break;
-                } else if (now.getTime() < fourthSatTime) {
-                    targetService = new Date(fourthSatTime);
-                    break;
-                }
-                
-                month++;
-                if (month > 11) {
-                    month = 0;
-                    year++;
-                }
+            if (!city || !state) {
+                alert("Please enter both City and State.");
+                return;
             }
 
-            if (targetService) {
-                const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-                const timeOptions = { hour: 'numeric', minute: '2-digit', timeZoneName: 'short' };
-                
-                const localDateStr = targetService.toLocaleDateString(undefined, dateOptions);
-                const localTimeStr = targetService.toLocaleTimeString(undefined, timeOptions);
-                
-                document.getElementById('nextServiceDate').innerHTML = `<b>${localDateStr}</b> at <b>${localTimeStr}</b>`;
-                
-                const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
-                document.getElementById('userTimezone').innerText = `Times automatically adjusted for your timezone (${tzName})`;
-            }
+            document.getElementById('sunsetDisplay').style.display = "block";
+            document.getElementById('sunsetTimeResult').innerText = "Loading...";
+            document.getElementById('locationHeader').innerText = `Searching for ${city}...`;
+
+            const geoUrl = `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&state=${encodeURIComponent(state)}&country=USA&format=json&limit=1`;
+            
+            fetch(geoUrl, { headers: { 'User-Agent': 'HouseOfJudahTesterApp/1.0' } })
+                .then(res => res.json())
+                .then(geoData => {
+                    if (!geoData || geoData.length === 0) {
+                        throw new Error("Location not found. Please check spelling.");
+                    }
+                    
+                    const lat = geoData[0].lat;
+                    const lon = geoData[0].lon;
+                    document.getElementById('locationHeader').innerText = `${city}, ${state.toUpperCase()}`;
+
+                    const sunsetUrl = `https://api.sunrise-sunset.org/json?lat=${lat}&lng=${lon}&formatted=0`;
+                    
+                    return fetch(sunsetUrl);
+                })
+                .then(res => res.json())
+                .then(sunData => {
+                    if (!sunData || sunData.status !== "OK") {
+                        throw new Error("Could not retrieve sunset data.");
+                    }
+
+                    const utcSunsetStr = sunData.results.sunset; 
+                    const localSunsetDate = new Date(utcSunsetStr);
+                    
+                    const formattedTime = localSunsetDate.toLocaleTimeString(undefined, {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true
+                    });
+
+                    document.getElementById('sunsetTimeResult').innerText = formattedTime;
+                })
+                .catch(err => {
+                    document.getElementById('sunsetTimeResult').innerText = "Error";
+                    document.getElementById('locationHeader').innerText = err.message;
+                    console.error(err);
+                });
         }
-
-        window.addEventListener('DOMContentLoaded', updateNextServiceBanner);
     </script>
 
 </body>
