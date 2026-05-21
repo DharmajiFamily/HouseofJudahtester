@@ -75,6 +75,38 @@
         }
         .view-btn:hover { background: #fff; }
         
+        /* Fixed Scroll to Top Button Style */
+        .scroll-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #d4af37;
+            color: #2d0b5a;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            opacity: 0; 
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s, transform 0.2s;
+            z-index: 1000;
+        }
+        .scroll-btn.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        .scroll-btn:hover {
+            background: #fff;
+            transform: scale(1.1);
+        }
+        
         .back-link { 
             display: block; 
             margin-top: 40px; 
@@ -152,9 +184,32 @@
         <a href="index.html" class="back-link">← Back to Home</a>
     </div>
 
+    <button id="scrollToTopBtn" class="scroll-btn" onclick="scrollToTop()">↑</button>
+
     <footer>
         2026 House of Judah
     </footer>
+
+    <script>
+        // Scroll to Top Logic
+        const topBtn = document.getElementById("scrollToTopBtn");
+
+        window.onscroll = function() {
+            // Shows button once the user scrolls down 300px
+            if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+                topBtn.classList.add("show");
+            } else {
+                topBtn.classList.remove("show");
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth" // Smooth roll animation
+            });
+        }
+    </script>
 
 </body>
 </html>
