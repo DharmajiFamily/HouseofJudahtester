@@ -92,6 +92,12 @@
     <footer>
         2026 House of Judah
     </footer>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js')
+      .then(() => console.log('App ready to install!'))
+      .catch((err) => console.log('Error', err));
+  }
+</script>
 </body>
 </html>
