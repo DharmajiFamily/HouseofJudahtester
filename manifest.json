@@ -1,0 +1,16 @@
+{
+  "name": "House of Judah",
+  "short_name": "House of Judah",
+  "start_url": "/HouseofJudah/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
