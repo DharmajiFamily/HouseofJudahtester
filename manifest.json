@@ -1,7 +1,7 @@
 {
-  "name": "House of Judah",
-  "short_name": "House of Judah",
-  "start_url": "/HouseofJudah/",
+  "name": "House of Judah Tester",
+  "short_name": "House of Judah Tester",
+  "start_url": "/HouseofJudahtester/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
